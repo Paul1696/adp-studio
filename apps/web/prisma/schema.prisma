@@ -1,0 +1,174 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// ── Utilisateurs ──────────────────────────────────────────────
+model User {
+  id        String   @id @default(cuid())
+  clerkId   String   @unique
+  email     String   @unique
+  firstName String?
+  lastName  String?
+  avatarUrl String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  projects    ProjectMember[]
+  activities  Activity[]
+  documents   Document[]
+  missions    Mission[]
+}
+
+// ── Projets ───────────────────────────────────────────────────
+model Project {
+  id          String        @id @default(cuid())
+  name        String
+  description String?
+  status      ProjectStatus @default(ACTIVE)
+  phase       String        @default("Conception")
+  progress    Int           @default(0)
+  budget      Float?
+  budgetSpent Float?
+  location    String?
+  surface     Float?
+  startDate   DateTime?
+  endDate     DateTime?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  members    ProjectMember[]
+  documents  Document[]
+  activities Activity[]
+  missions   Mission[]
+}
+
+enum ProjectStatus {
+  ACTIVE
+  PAUSED
+  COMPLETED
+  ARCHIVED
+}
+
+model ProjectMember {
+  id        String   @id @default(cuid())
+  projectId String
+  userId    String
+  role      String   @default("Membre")
+  joinedAt  DateTime @default(now())
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, userId])
+}
+
+// ── Documents ─────────────────────────────────────────────────
+model Document {
+  id         String       @id @default(cuid())
+  name       String
+  type       DocumentType @default(OTHER)
+  mimeType   String?
+  size       Int?
+  url        String?
+  projectId  String?
+  uploadedBy String?
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+
+  project  Project? @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  uploader User?    @relation(fields: [uploadedBy], references: [id], onDelete: SetNull)
+}
+
+enum DocumentType {
+  PLAN
+  REPORT
+  CONTRACT
+  PHOTO
+  BIM
+  OTHER
+}
+
+// ── Activités ─────────────────────────────────────────────────
+model Activity {
+  id        String       @id @default(cuid())
+  type      ActivityType
+  label     String
+  detail    String?
+  projectId String?
+  userId    String?
+  createdAt DateTime     @default(now())
+
+  project Project? @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  user    User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+}
+
+enum ActivityType {
+  DOCUMENT_UPLOAD
+  MISSION_LAUNCH
+  MISSION_COMPLETE
+  MEMBER_ADD
+  PROJECT_UPDATE
+  COMMENT
+}
+
+// ── Agents IA ─────────────────────────────────────────────────
+model Agent {
+  id          String      @id @default(cuid())
+  name        String
+  slug        String      @unique
+  description String?
+  category    String      @default("Général")
+  status      AgentStatus @default(ACTIVE)
+  model       String?
+  createdAt   DateTime    @default(now())
+
+  missions MissionAgent[]
+}
+
+enum AgentStatus {
+  ACTIVE
+  INACTIVE
+  BETA
+}
+
+// ── Missions IA ───────────────────────────────────────────────
+model Mission {
+  id        String        @id @default(cuid())
+  objectif  String
+  status    MissionStatus @default(PENDING)
+  projectId String?
+  userId    String?
+  startedAt DateTime?
+  endedAt   DateTime?
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+
+  project Project?       @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  user    User?          @relation(fields: [userId], references: [id], onDelete: SetNull)
+  agents  MissionAgent[]
+}
+
+enum MissionStatus {
+  PENDING
+  RUNNING
+  COMPLETED
+  FAILED
+  CANCELLED
+}
+
+model MissionAgent {
+  id        String @id @default(cuid())
+  missionId String
+  agentId   String
+
+  mission Mission @relation(fields: [missionId], references: [id], onDelete: Cascade)
+  agent   Agent   @relation(fields: [agentId], references: [id], onDelete: Cascade)
+
+  @@unique([missionId, agentId])
+}

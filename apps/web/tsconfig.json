@@ -1,0 +1,52 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ],
+    "paths": {
+      "@/*": [
+        "./src/*"
+      ],
+      "@/components/*": [
+        "./src/components/*"
+      ],
+      "@/lib/*": [
+        "./src/lib/*"
+      ],
+      "@/hooks/*": [
+        "./src/hooks/*"
+      ],
+      "@/stores/*": [
+        "./src/stores/*"
+      ],
+      "@/types/*": [
+        "./src/types/*"
+      ],
+      "@/styles/*": [
+        "./src/styles/*"
+      ],
+      "@adp-studio/ui": [
+        "../../packages/ui/src/index"
+      ],
+      "@adp-studio/types": [
+        "../../packages/types/src/index"
+      ],
+      "@adp-studio/shared": [
+        "../../packages/shared/src/index"
+      ]
+    },
+    "noEmit": true
+  },
+  "include": [
+    "next-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    ".next/types/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
+}

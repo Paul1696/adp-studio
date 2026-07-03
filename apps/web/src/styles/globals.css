@@ -1,0 +1,116 @@
+@import url('https://api.fontshare.com/v2/css?f[]=roca@400,700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* ── Surfaces ── */
+    --background:        210 40% 98%;   /* #F8FAFC */
+    --foreground:        222 47% 6%;    /* #0F172A */
+
+    /* ── Cards ── */
+    --card:              0 0% 100%;
+    --card-foreground:   222 47% 6%;
+
+    /* ── Popover ── */
+    --popover:           0 0% 100%;
+    --popover-foreground:222 47% 6%;
+
+    /* ── Primary — Bleu ADP #2563EB ── */
+    --primary:           221 83% 53%;
+    --primary-foreground:0 0% 100%;
+
+    /* ── Secondary ── */
+    --secondary:         214 32% 91%;
+    --secondary-foreground:222 47% 11%;
+
+    /* ── Muted ── */
+    --muted:             214 32% 95%;
+    --muted-foreground:  215 16% 47%;
+
+    /* ── Accent ── */
+    --accent:            213 100% 96%;  /* #EFF6FF */
+    --accent-foreground: 221 83% 43%;
+
+    /* ── Destructive ── */
+    --destructive:       0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    /* ── Border / Input / Ring ── */
+    --border:            214 32% 91%;   /* #E2E8F0 */
+    --input:             214 32% 91%;
+    --ring:              221 83% 53%;
+
+    /* ── Radius ── */
+    --radius:            0.5rem;
+
+    /* ── Sidebar ── */
+    --sidebar-width:     224px;
+  }
+
+  .dark {
+    --background:        222 47% 6%;
+    --foreground:        210 40% 98%;
+    --card:              222 47% 9%;
+    --card-foreground:   210 40% 98%;
+    --popover:           222 47% 9%;
+    --popover-foreground:210 40% 98%;
+    --primary:           217 91% 60%;
+    --primary-foreground:222 47% 11%;
+    --secondary:         217 33% 17%;
+    --secondary-foreground:210 40% 98%;
+    --muted:             217 33% 17%;
+    --muted-foreground:  215 20% 65%;
+    --accent:            217 33% 17%;
+    --accent-foreground: 210 40% 98%;
+    --destructive:       0 63% 31%;
+    --destructive-foreground:210 40% 98%;
+    --border:            217 33% 17%;
+    --input:             217 33% 17%;
+    --ring:              224 76% 48%;
+  }
+}
+
+@layer base {
+  * { @apply border-border; }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+
+  h1, h2, h3, h4, h5, h6 { @apply tracking-tight; }
+}
+
+/* ── Scrollbar fine ── */
+@layer utilities {
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--border)) transparent;
+  }
+  .scrollbar-thin::-webkit-scrollbar { width: 4px; height: 4px; }
+  .scrollbar-thin::-webkit-scrollbar-track { background: transparent; }
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background: hsl(var(--border));
+    border-radius: 99px;
+  }
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar { display: none; }
+}
+
+/* ── Transition page ── */
+@layer utilities {
+  .page-enter {
+    animation: fadeSlideIn 0.18s ease-out both;
+  }
+}
+
+@keyframes fadeSlideIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
