@@ -70,6 +70,12 @@ export function FloorPlan() {
       ))}
       <line x1="130" y1="300" x2="130" y2="420" stroke="#3b82f6" strokeWidth="0.8" />
 
+      {/* ── Remplissages pièces ── */}
+      <rect x="71" y="121" width="115" height="168" fill="#3b82f6" fillOpacity="0.05"/>
+      <rect x="187" y="121" width="116" height="78" fill="#3b82f6" fillOpacity="0.04"/>
+      <rect x="303" y="121" width="116" height="168" fill="#3b82f6" fillOpacity="0.06"/>
+      <rect x="71" y="291" width="348" height="168" fill="#3b82f6" fillOpacity="0.03"/>
+
       {/* ── Annotations dimensions intérieures ── */}
       <text x="128" y="260" textAnchor="middle" fontSize="8" fill="#3b82f6" fontFamily="sans-serif">Bureau</text>
       <text x="245" y="170" textAnchor="middle" fontSize="8" fill="#3b82f6" fontFamily="sans-serif">Salle réunion</text>
