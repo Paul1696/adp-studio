@@ -126,7 +126,7 @@ export function ProjectsClient({ projects, users, onNewProject }: ProjectsClient
       ) : view === 'grid' ? (
         <GridView projects={filtered} users={users} onNewProject={onNewProject} />
       ) : (
-        <ListView projects={filtered} users={users} />
+        <ListView projects={filtered} users={users} onNewProject={undefined} />
       )}
     </div>
   )
@@ -225,7 +225,7 @@ function ListView({ projects, users }: ViewProps) {
 
 // ── GridView ─────────────────────────────────────────────
 
-type ViewProps = { projects: MockProject[]; users: MockUser[]; onNewProject?: () => void }
+type ViewProps = { projects: MockProject[]; users: MockUser[]; onNewProject: (() => void) | undefined }
 
 function GridView({ projects, users, onNewProject }: ViewProps) {
   return (

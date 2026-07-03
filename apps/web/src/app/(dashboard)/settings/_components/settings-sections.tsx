@@ -365,6 +365,12 @@ export function SectionFacturation() {
 }
 
 export function SectionGeneral() {
+  const { user } = useUser()
+  const initials = user
+    ? `${user.firstName?.[0] ?? ''}${user.lastName?.[0] ?? ''}`.toUpperCase() || user.emailAddresses[0]?.emailAddress[0]?.toUpperCase() || 'U'
+    : 'U'
+  const fullName = user?.fullName ?? user?.emailAddresses[0]?.emailAddress ?? ''
+  const email = user?.emailAddresses[0]?.emailAddress ?? ''
   return (
     <div className="space-y-4">
       {/* Informations générales */}
