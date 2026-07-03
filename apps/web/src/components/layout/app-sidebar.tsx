@@ -1,6 +1,7 @@
 ﻿'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import {
   LayoutDashboard, FolderKanban, Bot, Library,
@@ -60,14 +61,15 @@ export function AppSidebar() {
     <aside className="flex h-screen w-56 shrink-0 flex-col border-r border-slate-200/80 bg-white">
 
       {/* Logo */}
-      <div className="flex h-14 items-center gap-2.5 border-b border-slate-200/80 px-4">
-        <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-adp-blue">
-          <span className="text-xs font-bold text-white">A</span>
-        </div>
-        <div className="leading-none">
-          <span className="text-sm font-bold text-adp-slate">ADP</span>
-          <span className="text-sm font-light text-adp-muted"> Studio</span>
-        </div>
+      <div className="flex h-14 items-center border-b border-slate-200/80 px-4">
+        <Image
+          src="/logo-adp.png"
+          alt="ADP Studio"
+          width={120}
+          height={36}
+          className="object-contain"
+          priority
+        />
       </div>
 
       {/* Navigation */}

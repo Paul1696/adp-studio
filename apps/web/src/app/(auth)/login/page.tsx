@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import Image from 'next/image'
 import { SignIn } from '@clerk/nextjs'
 
 export const metadata: Metadata = { title: 'Connexion — ADP Studio' }
@@ -10,13 +11,15 @@ export default function LoginPage() {
 
         {/* Logo */}
         <div className="flex flex-col items-center gap-3">
-          <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-adp-blue shadow-lg shadow-adp-blue/25">
-            <span className="text-base font-bold text-white">A</span>
-          </div>
-          <div className="text-center">
-            <h1 className="text-[20px] font-bold text-adp-slate">ADP Studio</h1>
-            <p className="mt-0.5 text-[14px] text-adp-muted">Plateforme IA pour architectes</p>
-          </div>
+          <Image
+            src="/logo-adp.png"
+            alt="ADP Studio"
+            width={200}
+            height={60}
+            className="object-contain"
+            priority
+          />
+          <p className="text-[14px] text-adp-muted">Plateforme IA pour architectes</p>
         </div>
 
         {/* Clerk SignIn */}
