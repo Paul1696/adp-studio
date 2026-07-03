@@ -63,10 +63,10 @@ export function AppSidebar() {
       {/* Logo */}
       <div className="flex h-14 items-center border-b border-slate-200/80 px-4">
         <Image
-          src="/logo-adp.png"
+          src="/logo-adp-studio.png"
           alt="ADP Studio"
-          width={120}
-          height={36}
+          width={130}
+          height={50}
           className="object-contain"
           priority
         />

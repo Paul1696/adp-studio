@@ -12,10 +12,10 @@ export default function LoginPage() {
         {/* Logo */}
         <div className="flex flex-col items-center gap-3">
           <Image
-            src="/logo-adp.png"
+            src="/logo-adp-studio.png"
             alt="ADP Studio"
-            width={200}
-            height={60}
+            width={220}
+            height={84}
             className="object-contain"
             priority
           />
