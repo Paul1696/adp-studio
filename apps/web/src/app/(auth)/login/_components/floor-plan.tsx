@@ -76,11 +76,34 @@ export function FloorPlan() {
       <rect x="303" y="121" width="116" height="168" fill="#3b82f6" fillOpacity="0.06"/>
       <rect x="71" y="291" width="348" height="168" fill="#3b82f6" fillOpacity="0.03"/>
 
-      {/* ── Annotations dimensions intérieures ── */}
-      <text x="128" y="260" textAnchor="middle" fontSize="8" fill="#3b82f6" fontFamily="sans-serif">Bureau</text>
-      <text x="245" y="170" textAnchor="middle" fontSize="8" fill="#3b82f6" fontFamily="sans-serif">Salle réunion</text>
-      <text x="361" y="200" textAnchor="middle" fontSize="8" fill="#3b82f6" fontFamily="sans-serif">Open space</text>
-      <text x="245" y="380" textAnchor="middle" fontSize="8" fill="#3b82f6" fontFamily="sans-serif">Atelier</text>
+      {/* ── Mobilier Bureau ── */}
+      <rect x="82" y="155" width="40" height="28" stroke="#3b82f6" strokeWidth="0.7"/>
+      <rect x="82" y="155" width="40" height="8" stroke="#3b82f6" strokeWidth="0.5" fill="#3b82f6" fillOpacity="0.08"/>
+      <rect x="148" y="155" width="40" height="28" stroke="#3b82f6" strokeWidth="0.7"/>
+      <rect x="148" y="155" width="40" height="8" stroke="#3b82f6" strokeWidth="0.5" fill="#3b82f6" fillOpacity="0.08"/>
+
+      {/* ── Mobilier Salle réunion ── */}
+      <rect x="208" y="140" width="75" height="44" rx="3" stroke="#3b82f6" strokeWidth="0.8"/>
+      {[-12,0,12].map(dy => (
+        <rect key={dy} x="200" y={152+dy} width="10" height="8" rx="1" stroke="#3b82f6" strokeWidth="0.5" fill="#3b82f6" fillOpacity="0.06"/>
+      ))}
+      {[-12,0,12].map(dy => (
+        <rect key={`r${dy}`} x="281" y={152+dy} width="10" height="8" rx="1" stroke="#3b82f6" strokeWidth="0.5" fill="#3b82f6" fillOpacity="0.06"/>
+      ))}
+
+      {/* ── Mobilier Open space ── */}
+      {[0,1,2].map(i => (
+        <g key={i}>
+          <rect x={316 + i*26} y="145" width="20" height="14" stroke="#3b82f6" strokeWidth="0.6"/>
+          <rect x={316 + i*26} y="175" width="20" height="14" stroke="#3b82f6" strokeWidth="0.6"/>
+        </g>
+      ))}
+
+      {/* ── Annotations ── */}
+      <text x="128" y="255" textAnchor="middle" fontSize="8" fill="#3b82f6" fontFamily="sans-serif" fontWeight="600">Bureau</text>
+      <text x="245" y="197" textAnchor="middle" fontSize="8" fill="#3b82f6" fontFamily="sans-serif" fontWeight="600">Salle réunion</text>
+      <text x="361" y="230" textAnchor="middle" fontSize="8" fill="#3b82f6" fontFamily="sans-serif" fontWeight="600">Open space</text>
+      <text x="245" y="390" textAnchor="middle" fontSize="8" fill="#3b82f6" fontFamily="sans-serif" fontWeight="600">Atelier</text>
     </svg>
   )
 }
