@@ -1,9 +1,9 @@
 import type { Metadata } from 'next'
 import Image from 'next/image'
 import { SignIn } from '@clerk/nextjs'
-import { FloorPlan } from './_components/floor-plan'
-import { Building } from './_components/building'
-import { Decorations } from './_components/decorations'
+import { FloorPlan } from '../_components/floor-plan'
+import { Building } from '../_components/building'
+import { Decorations } from '../_components/decorations'
 
 export const metadata: Metadata = { title: 'Connexion — ADP Studio' }
 
