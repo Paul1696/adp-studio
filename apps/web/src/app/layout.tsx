@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next'
 import { GeistSans } from 'geist/font/sans'
 import { GeistMono } from 'geist/font/mono'
 import { ClerkProvider } from '@clerk/nextjs'
+import { frFR } from '@clerk/localizations'
 import { ThemeProvider } from '@/components/layout/theme-provider'
 import { QueryProvider } from '@/components/layout/query-provider'
 import '@/styles/globals.css'
@@ -46,7 +47,16 @@ export default function RootLayout({ children }: RootLayoutProps) {
       suppressHydrationWarning
     >
       <body>
-        <ClerkProvider>
+        <ClerkProvider
+          localization={frFR}
+          appearance={{
+            variables: {
+              colorPrimary: '#2563eb',
+              borderRadius: '0.625rem',
+              fontFamily: 'var(--font-geist-sans), system-ui, sans-serif',
+            },
+          }}
+        >
           <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
             <QueryProvider>{children}</QueryProvider>
           </ThemeProvider>
