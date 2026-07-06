@@ -1,20 +1,30 @@
-﻿import { FileText, Share2, Upload, Box, HardDrive, Download, MoreHorizontal, Search, Plus } from 'lucide-react'
+﻿import { FileText, Upload, Box, HardDrive, Download, MoreHorizontal, Search, Plus } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { MOCK_DOCUMENTS } from '@/lib/mock-data'
+import { prisma } from '@/lib/prisma'
+import { getProjectDocuments, formatSize } from '@/lib/data/documents'
+
+export const dynamic = 'force-dynamic'
 
 interface Props { params: Promise<{ id: string }> }
 
-const STATS = [
-  { icon: FileText,  label: 'Total docs',  value: '24',      color: 'text-blue-500 bg-blue-50' },
-  { icon: Share2,    label: 'Partagés',    value: '8',       color: 'text-violet-500 bg-violet-50' },
-  { icon: Upload,    label: 'Importés',    value: '36',      color: 'text-emerald-500 bg-emerald-50' },
-  { icon: Box,       label: 'Fichiers BIM', value: '12',     color: 'text-orange-500 bg-orange-50' },
-  { icon: HardDrive, label: 'Taille totale', value: '124,6 Go', color: 'text-pink-500 bg-pink-50' },
-]
-
 export default async function ProjectDocumentsPage({ params }: Props) {
   const { id } = await params
-  const docs = MOCK_DOCUMENTS.filter((d) => d.projectId === id)
+  const docs = await getProjectDocuments(id)
+
+  const sizeAgg = await prisma.document.aggregate({
+    where: { projectId: id },
+    _sum: { size: true },
+  })
+  const totalSize = sizeAgg._sum.size ?? 0
+  const bimCount = docs.filter((d) => d.category === 'Maquette BIM').length
+
+  const stats = [
+    { icon: FileText,  label: 'Total docs',    value: String(docs.length),   color: 'text-blue-500 bg-blue-50' },
+    { icon: Box,       label: 'Fichiers BIM',  value: String(bimCount),      color: 'text-orange-500 bg-orange-50' },
+    { icon: Upload,    label: 'Plans',         value: String(docs.filter((d) => d.category === 'Plans').length), color: 'text-emerald-500 bg-emerald-50' },
+    { icon: FileText,  label: 'Rapports',      value: String(docs.filter((d) => d.category === 'Rapport').length), color: 'text-violet-500 bg-violet-50' },
+    { icon: HardDrive, label: 'Taille totale', value: formatSize(totalSize), color: 'text-pink-500 bg-pink-50' },
+  ]
 
   return (
     <div className="flex gap-5">
@@ -23,7 +33,7 @@ export default async function ProjectDocumentsPage({ params }: Props) {
 
         {/* Stats */}
         <div className="grid grid-cols-5 gap-3">
-          {STATS.map(({ icon: Icon, label, value, color }) => (
+          {stats.map(({ icon: Icon, label, value, color }) => (
             <div key={label} className="flex items-center gap-3 rounded-xl border border-slate-200/80 bg-white p-3 shadow-sm">
               <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${color}`}>
                 <Icon className="h-3.5 w-3.5" />
@@ -69,7 +79,14 @@ export default async function ProjectDocumentsPage({ params }: Props) {
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
-              {(docs.length > 0 ? docs : MOCK_DOCUMENTS).map((doc) => {
+              {docs.length === 0 && (
+                <tr>
+                  <td colSpan={8} className="px-4 py-10 text-center text-adp-muted">
+                    Aucun document sur ce projet. Importez votre premier fichier.
+                  </td>
+                </tr>
+              )}
+              {docs.map((doc) => {
                 const typeCfg: Record<string, string> = {
                   DWG:  'bg-blue-100 text-blue-700',
                   IFC:  'bg-violet-100 text-violet-700',
@@ -152,10 +169,9 @@ export default async function ProjectDocumentsPage({ params }: Props) {
         <div className="rounded-xl border border-slate-200/80 bg-white p-4 shadow-sm">
           <h3 className="mb-3 text-xs font-semibold uppercase tracking-wide text-adp-muted">Stockage utilisé</h3>
           <div className="mb-2 h-2 overflow-hidden rounded-full bg-slate-100">
-            <div className="h-full rounded-full bg-adp-blue" style={{ width: '64%' }} />
+            <div className="h-full rounded-full bg-adp-blue" style={{ width: `${Math.min(100, (totalSize / 214_748_364_800) * 100)}%` }} />
           </div>
-          <p className="text-xs text-adp-slate"><span className="font-bold">124,6 Go</span> / 200 Go</p>
-          <p className="mt-0.5 text-[11px] text-adp-muted">64% utilisé</p>
+          <p className="text-xs text-adp-slate"><span className="font-bold">{formatSize(totalSize)}</span> / 200 Go</p>
         </div>
       </div>
     </div>

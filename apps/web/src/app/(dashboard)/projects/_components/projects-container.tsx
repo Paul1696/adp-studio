@@ -3,7 +3,6 @@
 import { useState } from 'react'
 import { Loader2, Plus } from 'lucide-react'
 import { useProjects } from '@/hooks/use-projects'
-import { MOCK_USERS } from '@/lib/mock-data'
 import { PageHeader } from '@/components/ui/page-header'
 import { ProjectsClient } from './projects-client'
 import { NewProjectModal } from './new-project-modal'
@@ -41,7 +40,7 @@ export function ProjectsContainer() {
           <p className="text-sm text-red-600">Impossible de charger les projets.</p>
         </div>
       ) : (
-        <ProjectsClient projects={projects ?? []} users={MOCK_USERS} onNewProject={openModal} />
+        <ProjectsClient projects={projects ?? []} onNewProject={openModal} />
       )}
     </>
   )

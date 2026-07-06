@@ -4,7 +4,8 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { Bell, Settings, ChevronRight, Plus } from 'lucide-react'
 import { useUser, SignOutButton } from '@clerk/nextjs'
-import { MOCK_PROJECTS } from '@/lib/mock-data'
+import type { MockProject } from '@/lib/mock-data'
+import { useProjects } from '@/hooks/use-projects'
 import { cn } from '@/lib/utils'
 import { SearchBar } from '@/components/ui/search-bar'
 
@@ -23,7 +24,7 @@ const ROUTE_META: Record<string, RouteMeta> = {
   '/settings':     { crumbs: [{ label: 'Paramètres' }] },
 }
 
-function useRouteMeta(pathname: string): RouteMeta {
+function useRouteMeta(pathname: string, projects: MockProject[]): RouteMeta {
   if (ROUTE_META[pathname]) return ROUTE_META[pathname]!
 
   // Routes projet dynamiques : /projects/[id]/...
@@ -31,7 +32,7 @@ function useRouteMeta(pathname: string): RouteMeta {
   if (projectMatch) {
     const id = projectMatch[1]
     const sub = projectMatch[3] ?? ''
-    const project = MOCK_PROJECTS.find((p) => p.id === id)
+    const project = projects.find((p) => p.id === id)
     const projectLabel = project?.name ?? 'Projet'
     const SUB_LABELS: Record<string, string> = {
       documents: 'Documents', missions: 'Missions IA', planning: 'Planning',
@@ -70,7 +71,8 @@ function useRouteMeta(pathname: string): RouteMeta {
 
 export function AppHeader() {
   const pathname = usePathname()
-  const meta = useRouteMeta(pathname)
+  const { data: projects } = useProjects()
+  const meta = useRouteMeta(pathname, projects ?? [])
   const { user } = useUser()
   const initials = user
     ? `${user.firstName?.[0] ?? ''}${user.lastName?.[0] ?? ''}`.toUpperCase() || user.emailAddresses[0]?.emailAddress[0]?.toUpperCase() || 'U'

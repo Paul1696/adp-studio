@@ -5,7 +5,11 @@ import {
   FolderPlus, FileSearch, Calculator,
   FileBarChart, Lightbulb, MessageSquare, ChevronRight,
 } from 'lucide-react'
-import { MOCK_PROJECTS, MOCK_USERS } from '@/lib/mock-data'
+import { getUserProjects } from '@/lib/data/projects'
+import { getUserMissions } from '@/lib/data/missions'
+import { getAgents } from '@/lib/data/agents'
+import { getUserActivities } from '@/lib/data/activities'
+import { getUserDocuments } from '@/lib/data/documents'
 import { HeroDashboard }    from '@/components/features/hero-dashboard'
 import { QuickActionCard }  from '@/components/features/quick-action-card'
 import { MissionCard }      from '@/components/features/mission-card'
@@ -38,14 +42,32 @@ function SectionHeader({ title, href, linkLabel = 'Voir tout' }: { title: string
   )
 }
 
-export default function DashboardPage() {
+export default async function DashboardPage() {
+  const [projects, missions, agents, activities, documents] = await Promise.all([
+    getUserProjects(),
+    getUserMissions(),
+    getAgents(),
+    getUserActivities(),
+    getUserDocuments(),
+  ])
+
+  const lastProject = projects[0] ?? null
+  const favoriteAgents = [...agents].sort((a, b) => b.usageCount - a.usageCount)
+
+  const stats = {
+    activeProjects: projects.filter((p) => p.status === 'en_cours').length,
+    documents: documents.length,
+    completedMissions: missions.filter((m) => m.status === 'completed').length,
+    pendingMissions: missions.filter((m) => m.status === 'draft' || m.status === 'running').length,
+  }
+
   return (
     <div className="flex gap-6">
 
       {/* ── Colonne principale ── */}
       <div className="min-w-0 flex-1 space-y-4">
 
-        <HeroDashboard />
+        <HeroDashboard lastProject={lastProject} stats={stats} />
 
         {/* Actions rapides */}
         <section>
@@ -58,7 +80,7 @@ export default function DashboardPage() {
         </section>
 
         {/* Missions actives */}
-        <ActiveMissions />
+        <ActiveMissions missions={missions} agents={agents} />
 
         {/* Mission IA */}
         <MissionCard />
@@ -67,20 +89,17 @@ export default function DashboardPage() {
         <section>
           <SectionHeader title="Projets récents" href="/projects" linkLabel="Voir tous les projets" />
           <div className="grid grid-cols-4 gap-3">
-            {MOCK_PROJECTS.slice(0, 4).map((p, i) => {
-              const members = p.members
-                .map((uid) => MOCK_USERS.find((u) => u.id === uid))
-                .filter(Boolean) as typeof MOCK_USERS
-              return <ProjectCard key={p.id} project={p} members={members} delay={0.05 * i} />
-            })}
+            {projects.slice(0, 4).map((p, i) => (
+              <ProjectCard key={p.id} project={p} members={p.members} delay={0.05 * i} index={i} />
+            ))}
           </div>
         </section>
       </div>
 
       {/* ── Colonne droite ── */}
       <div className="w-64 shrink-0 space-y-3">
-        <FavoriteAgents />
-        <RecentActivities />
+        <FavoriteAgents agents={favoriteAgents} />
+        <RecentActivities activities={activities} />
       </div>
     </div>
   )

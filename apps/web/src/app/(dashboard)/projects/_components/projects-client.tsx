@@ -6,14 +6,38 @@ import { LayoutGrid, List, ChevronDown, Plus, FolderPlus, FolderKanban } from 'l
 import { cn } from '@/lib/utils'
 import { EmptyState } from '@/components/ui/empty-state'
 import { ProjectImage } from '@/components/ui/project-image'
-import type { MockProject, MockUser } from '@/lib/mock-data'
+import type { MockProject } from '@/lib/mock-data'
 
 // ── Types ────────────────────────────────────────────────
 
 export interface ProjectsClientProps {
   projects: MockProject[]
-  users: MockUser[]
   onNewProject?: () => void
+}
+
+// Avatars dérivés des noms réels des membres
+const AVATAR_COLORS = ['bg-adp-blue', 'bg-violet-500', 'bg-emerald-500', 'bg-orange-500', 'bg-pink-500', 'bg-teal-500', 'bg-rose-500']
+
+function memberInitials(name: string): string {
+  const parts = name.trim().split(/\s+/)
+  return ((parts[0]?.[0] ?? '') + (parts[1]?.[0] ?? '')).toUpperCase() || '?'
+}
+
+function MemberAvatars({ names, max }: { names: string[]; max: number }) {
+  return (
+    <div className="flex -space-x-1.5">
+      {names.slice(0, max).map((name, i) => (
+        <div key={`${name}-${i}`} title={name} className={cn('flex h-6 w-6 items-center justify-center rounded-full border-2 border-white text-[8px] font-bold text-white shadow-sm', AVATAR_COLORS[i % AVATAR_COLORS.length])}>
+          {memberInitials(name)}
+        </div>
+      ))}
+      {names.length > max && (
+        <div className="flex h-6 w-6 items-center justify-center rounded-full border-2 border-white bg-slate-100 text-[8px] font-bold text-slate-500">
+          +{names.length - max}
+        </div>
+      )}
+    </div>
+  )
 }
 
 // ── Constantes ───────────────────────────────────────────
@@ -45,7 +69,7 @@ const TABS = [
 
 // ── Composant principal ──────────────────────────────────
 
-export function ProjectsClient({ projects, users, onNewProject }: ProjectsClientProps) {
+export function ProjectsClient({ projects, onNewProject }: ProjectsClientProps) {
   const [activeFilter, setActiveFilter] = useState<string | null>(null)
   const [view, setView] = useState<'grid' | 'list'>('grid')
 
@@ -124,9 +148,9 @@ export function ProjectsClient({ projects, users, onNewProject }: ProjectsClient
           }
         />
       ) : view === 'grid' ? (
-        <GridView projects={filtered} users={users} {...(onNewProject ? { onNewProject } : {})} />
+        <GridView projects={filtered} {...(onNewProject ? { onNewProject } : {})} />
       ) : (
-        <ListView projects={filtered} users={users} />
+        <ListView projects={filtered} />
       )}
     </div>
   )
@@ -134,7 +158,7 @@ export function ProjectsClient({ projects, users, onNewProject }: ProjectsClient
 
 // ── ListView ─────────────────────────────────────────────
 
-function ListView({ projects, users }: ViewProps) {
+function ListView({ projects }: ViewProps) {
   return (
     <div className="mt-4 overflow-hidden rounded-xl border border-slate-200/80 bg-white shadow-sm">
       <table className="w-full">
@@ -149,7 +173,6 @@ function ListView({ projects, users }: ViewProps) {
         </thead>
         <tbody className="divide-y divide-slate-100">
           {projects.map((p) => {
-            const members = p.members.slice(0, 3).map((uid) => users.find((u) => u.id === uid)).filter(Boolean)
             const statusCfg = STATUS_CFG[p.status]
             const phaseCls  = PHASE_CFG[p.apdStage] ?? 'bg-slate-600'
             return (
@@ -192,18 +215,7 @@ function ListView({ projects, users }: ViewProps) {
                 </td>
                 {/* Équipe */}
                 <td className="px-4 py-3">
-                  <div className="flex -space-x-1.5">
-                    {members.map((u) => u && (
-                      <div key={u.id} title={u.fullName} className={cn('flex h-6 w-6 items-center justify-center rounded-full border-2 border-white text-[8px] font-bold text-white shadow-sm', u.avatarColor)}>
-                        {u.initials}
-                      </div>
-                    ))}
-                    {p.members.length > 3 && (
-                      <div className="flex h-6 w-6 items-center justify-center rounded-full border-2 border-white bg-slate-100 text-[8px] font-bold text-slate-500">
-                        +{p.members.length - 3}
-                      </div>
-                    )}
-                  </div>
+                  <MemberAvatars names={p.members} max={3} />
                 </td>
                 {/* Action */}
                 <td className="px-4 py-3 text-right">
@@ -225,13 +237,12 @@ function ListView({ projects, users }: ViewProps) {
 
 // ── GridView ─────────────────────────────────────────────
 
-type ViewProps = { projects: MockProject[]; users: MockUser[]; onNewProject?: () => void }
+type ViewProps = { projects: MockProject[]; onNewProject?: () => void }
 
-function GridView({ projects, users, onNewProject }: ViewProps) {
+function GridView({ projects, onNewProject }: ViewProps) {
   return (
     <div className="grid grid-cols-3 gap-4 pt-4">
       {projects.map((p) => {
-        const members = p.members.slice(0, 4).map((uid) => users.find((u) => u.id === uid)).filter(Boolean)
         const statusCfg = STATUS_CFG[p.status]
         const phaseCls  = PHASE_CFG[p.apdStage] ?? 'bg-slate-600'
         return (
@@ -277,18 +288,7 @@ function GridView({ projects, users, onNewProject }: ViewProps) {
                 </div>
               </div>
               <div className="flex items-center justify-between">
-                <div className="flex -space-x-1.5">
-                  {members.map((u) => u && (
-                    <div key={u.id} title={u.fullName} className={cn('flex h-6 w-6 items-center justify-center rounded-full border-2 border-white text-[8px] font-bold text-white shadow-sm', u.avatarColor)}>
-                      {u.initials}
-                    </div>
-                  ))}
-                  {p.members.length > 4 && (
-                    <div className="flex h-6 w-6 items-center justify-center rounded-full border-2 border-white bg-slate-100 text-[8px] font-bold text-slate-500">
-                      +{p.members.length - 4}
-                    </div>
-                  )}
-                </div>
+                <MemberAvatars names={p.members} max={4} />
                 <span className="flex items-center gap-1 rounded-lg bg-adp-blue px-3 py-1.5 text-[13px] font-semibold text-white transition-colors duration-150 hover:bg-adp-blue-dark">
                   Ouvrir →
                 </span>

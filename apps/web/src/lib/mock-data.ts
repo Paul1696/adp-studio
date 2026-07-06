@@ -329,7 +329,7 @@ export interface MockAgent {
   color: string
   colorBg: string
   usageCount: number
-  rating: number
+  rating?: number
   isAdp: boolean
   competences: string[]
   tags: string[]

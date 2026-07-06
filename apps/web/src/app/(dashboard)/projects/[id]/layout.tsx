@@ -1,6 +1,6 @@
 ﻿import { notFound } from 'next/navigation'
 import { Calendar, Maximize2, Banknote, Info } from 'lucide-react'
-import { MOCK_PROJECTS } from '@/lib/mock-data'
+import { getProject } from '@/lib/data/projects'
 import { cn } from '@/lib/utils'
 import { ProjectTabs } from './_components/project-tabs'
 import { ProjectImage } from '@/components/ui/project-image'
@@ -12,8 +12,9 @@ interface ProjectLayoutProps {
 
 export default async function ProjectLayout({ children, params }: ProjectLayoutProps) {
   const { id } = await params
-  const project = MOCK_PROJECTS.find((p) => p.id === id)
-  if (!project) notFound()
+  const result = await getProject(id)
+  if (!result) notFound()
+  const project = result.ui
 
   const statusCfg = {
     en_cours: 'bg-emerald-100 text-emerald-700',

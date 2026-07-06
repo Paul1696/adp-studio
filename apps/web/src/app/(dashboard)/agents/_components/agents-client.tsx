@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { Star, MessageSquare, TrendingUp, Plus } from 'lucide-react'
+import { MessageSquare, TrendingUp, Plus } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { MockAgent } from '@/lib/mock-data'
 
@@ -63,10 +63,6 @@ export function AgentsClient({ agents }: AgentsClientProps) {
                     <span className="min-w-0 flex-1 truncate rounded-md bg-slate-100 px-1.5 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-adp-muted">
                       {agent.specialty}
                     </span>
-                    <div className="flex shrink-0 items-center gap-0.5">
-                      <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" strokeWidth={0} />
-                      <span className="text-[13px] font-semibold text-adp-slate">{agent.rating}</span>
-                    </div>
                   </div>
                   <p className="mt-2 line-clamp-2 text-[13px] leading-snug text-adp-muted">{agent.description}</p>
                   <div className="mt-3 flex items-center justify-between">

@@ -3,24 +3,35 @@
 import { useState, useRef, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Search, FolderOpen, Bot, FileText } from 'lucide-react'
-import { MOCK_PROJECTS, MOCK_AGENTS, MOCK_DOCUMENTS } from '@/lib/mock-data'
+import { useDebounce } from '@/hooks/use-debounce'
 import { cn } from '@/lib/utils'
 
-function useSearch(query: string) {
-  const q = query.toLowerCase().trim()
-  if (!q || q.length < 2) return { projects: [], agents: [], documents: [] }
+interface SearchResults {
+  projects: { id: string; name: string; location: string }[]
+  agents: { id: string; name: string; specialty: string }[]
+  documents: { id: string; name: string; type: string }[]
+}
 
-  return {
-    projects:  MOCK_PROJECTS.filter((p) =>
-      p.name.toLowerCase().includes(q) || p.location.toLowerCase().includes(q)
-    ).slice(0, 3),
-    agents:    MOCK_AGENTS.filter((a) =>
-      a.name.toLowerCase().includes(q) || a.specialty.toLowerCase().includes(q)
-    ).slice(0, 3),
-    documents: MOCK_DOCUMENTS.filter((d) =>
-      d.name.toLowerCase().includes(q) || d.type.toLowerCase().includes(q)
-    ).slice(0, 3),
-  }
+const EMPTY_RESULTS: SearchResults = { projects: [], agents: [], documents: [] }
+
+function useSearch(query: string) {
+  const debounced = useDebounce(query, 250)
+  const [results, setResults] = useState<SearchResults>(EMPTY_RESULTS)
+
+  useEffect(() => {
+    const q = debounced.trim()
+    if (q.length < 2) { setResults(EMPTY_RESULTS); return }
+
+    const controller = new AbortController()
+    fetch(`/api/search?q=${encodeURIComponent(q)}`, { signal: controller.signal })
+      .then((res) => res.json())
+      .then((data: SearchResults) => setResults(data))
+      .catch(() => {})
+
+    return () => controller.abort()
+  }, [debounced])
+
+  return results
 }
 
 export function SearchBar() {

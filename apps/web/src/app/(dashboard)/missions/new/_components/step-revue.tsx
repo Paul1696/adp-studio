@@ -1,14 +1,14 @@
-﻿'use client'
+'use client'
 
-import { MOCK_AGENTS } from '@/lib/mock-data'
+import type { MockAgent } from '@/lib/mock-data'
 import { cn } from '@/lib/utils'
 import { Zap, MapPin, Bot } from 'lucide-react'
-import type { WizardState } from '../page'
+import type { WizardState } from '../_components/wizard'
 
-interface Props { state: WizardState }
+interface Props { state: WizardState; agents: MockAgent[] }
 
-export function StepRevue({ state }: Props) {
-  const agents = MOCK_AGENTS.filter((a) => state.agentIds.includes(a.id))
+export function StepRevue({ state, agents }: Props) {
+  const selected = agents.filter((a) => state.agentIds.includes(a.id))
   return (
     <div className="space-y-5">
       <div>
@@ -39,22 +39,16 @@ export function StepRevue({ state }: Props) {
         <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
           <div className="mb-3 flex items-center gap-2">
             <Bot className="h-3.5 w-3.5 text-adp-blue" strokeWidth={1.75} />
-            <p className="text-[13px] font-semibold uppercase tracking-widest text-adp-muted">Agents ({agents.length})</p>
+            <p className="text-[13px] font-semibold uppercase tracking-widest text-adp-muted">Agents ({selected.length})</p>
           </div>
           <div className="flex flex-wrap gap-2">
-            {agents.map((a) => (
+            {selected.map((a) => (
               <div key={a.id} className={cn('flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5', a.colorBg)}>
                 <span className={cn('text-[13px] font-bold', a.color)}>{a.icon}</span>
                 <span className="text-[13px] font-medium text-adp-slate">{a.name}</span>
               </div>
             ))}
           </div>
-        </div>
-
-        <div className="rounded-lg border border-adp-blue/20 bg-adp-blue/5 p-3">
-          <p className="text-[13px] leading-relaxed text-adp-blue">
-            La mission sera simulée avec des données fictives. Aucune IA réelle ne sera sollicitée dans cette version MVP.
-          </p>
         </div>
       </div>
     </div>

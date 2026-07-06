@@ -126,6 +126,8 @@ model Agent {
   category    String      @default("Général")
   status      AgentStatus @default(ACTIVE)
   model       String?
+  competences String[]    @default([])
+  tags        String[]    @default([])
   createdAt   DateTime    @default(now())
 
   missions MissionAgent[]

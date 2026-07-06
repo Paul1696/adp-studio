@@ -2,7 +2,8 @@
 
 import Link from 'next/link'
 import { Zap, CheckCircle, Clock, Loader, ChevronRight, Bot } from 'lucide-react'
-import { MOCK_MISSIONS, MOCK_AGENTS } from '@/lib/mock-data'
+import type { Mission } from '@/lib/types'
+import type { MockAgent } from '@/lib/mock-data'
 import { cn } from '@/lib/utils'
 
 const STATUS_CFG = {
@@ -12,8 +13,13 @@ const STATUS_CFG = {
   failed:    { label: 'Échouée',   cls: 'bg-red-100 text-red-700',      dot: 'bg-red-500' },
 }
 
-export function ActiveMissions() {
-  const missions = MOCK_MISSIONS
+interface ActiveMissionsProps {
+  missions: Mission[]
+  agents: MockAgent[]
+}
+
+export function ActiveMissions({ missions: allMissions, agents: allAgents }: ActiveMissionsProps) {
+  const missions = allMissions
     .filter((m) => m.status === 'running' || m.status === 'draft')
     .slice(0, 3)
 
@@ -36,7 +42,7 @@ export function ActiveMissions() {
       <div className="grid grid-cols-3 gap-3">
         {missions.map((mission) => {
           const cfg = STATUS_CFG[mission.status]
-          const agents = MOCK_AGENTS.filter((a) => mission.agentIds.includes(a.id))
+          const agents = allAgents.filter((a) => mission.agentIds.includes(a.id))
           const done = mission.steps.filter((s) => s.status === 'done').length
           const total = mission.steps.length
           const pct = total > 0 ? Math.round((done / total) * 100) : 0

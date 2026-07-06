@@ -1,8 +1,9 @@
-﻿'use client'
-
-import { Upload, Bot, MessageSquare, AlertTriangle, CheckCircle, UserPlus, Filter } from 'lucide-react'
-import { MOCK_ACTIVITIES } from '@/lib/mock-data'
+﻿import { Upload, Bot, MessageSquare, AlertTriangle, CheckCircle, UserPlus, Filter } from 'lucide-react'
+import { getProjectActivities } from '@/lib/data/activities'
+import type { MockActivity } from '@/lib/mock-data'
 import { cn } from '@/lib/utils'
+
+export const dynamic = 'force-dynamic'
 
 const TYPE_CFG = {
   upload:     { icon: Upload,        color: 'text-blue-600 bg-blue-50',    label: 'Import' },
@@ -13,8 +14,13 @@ const TYPE_CFG = {
   member:     { icon: UserPlus,      color: 'text-orange-600 bg-orange-50', label: 'Équipe' },
 } as const
 
-export default function ProjectActivitesPage() {
-  const grouped = MOCK_ACTIVITIES.reduce<Record<string, typeof MOCK_ACTIVITIES>>((acc, a) => {
+interface Props { params: Promise<{ id: string }> }
+
+export default async function ProjectActivitesPage({ params }: Props) {
+  const { id } = await params
+  const activities = await getProjectActivities(id)
+
+  const grouped = activities.reduce<Record<string, MockActivity[]>>((acc, a) => {
     acc[a.date] = [...(acc[a.date] ?? []), a]
     return acc
   }, {})
@@ -23,6 +29,11 @@ export default function ProjectActivitesPage() {
     <div className="flex gap-5">
       {/* ── Timeline ── */}
       <div className="min-w-0 flex-1 space-y-6">
+        {activities.length === 0 && (
+          <div className="rounded-xl border border-slate-200/80 bg-white p-10 text-center shadow-sm">
+            <p className="text-sm text-adp-muted">Aucune activité enregistrée sur ce projet pour le moment.</p>
+          </div>
+        )}
         {Object.entries(grouped).map(([date, items]) => (
           <div key={date}>
             <p className="mb-3 text-xs font-semibold text-adp-muted">{date}</p>

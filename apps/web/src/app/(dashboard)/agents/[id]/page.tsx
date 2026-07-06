@@ -1,16 +1,19 @@
 ﻿import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { Star, MessageSquare, ThumbsUp, Zap, CheckCircle, ArrowLeft, Bot } from 'lucide-react'
-import { MOCK_AGENTS, MOCK_MISSIONS } from '@/lib/mock-data'
+import { MessageSquare, CheckCircle2, Zap, CheckCircle, ArrowLeft, Bot } from 'lucide-react'
+import type { MockAgent } from '@/lib/mock-data'
+import type { Mission } from '@/lib/types'
+import { getAgent } from '@/lib/data/agents'
+import { getAgentMissions } from '@/lib/data/missions'
 import { cn } from '@/lib/utils'
 import { StatCard } from '@/components/ui/stat-card'
 import { SidebarPanel } from '@/components/ui/sidebar-panel'
 
 export const metadata: Metadata = { title: 'Agent IA' }
+export const dynamic = 'force-dynamic'
 
-type Agent = (typeof MOCK_AGENTS)[number]
-type Mission = (typeof MOCK_MISSIONS)[number]
+type Agent = MockAgent
 
 function AgentDetails({ agent }: { agent: Agent }) {
   return (
@@ -130,10 +133,6 @@ function AgentHeader({ agent }: { agent: Agent }) {
               <p className="mt-0.5 text-[13px] text-adp-muted">{agent.specialty}</p>
             </div>
             <div className="flex shrink-0 items-center gap-2">
-              <div className="flex items-center gap-1 rounded-lg border border-slate-200 px-2.5 py-1.5">
-                <Star className="h-3.5 w-3.5 fill-yellow-400 text-yellow-400" strokeWidth={0} />
-                <span className="text-[13px] font-bold text-adp-slate">{agent.rating}</span>
-              </div>
               <span className="rounded-md bg-emerald-50 px-2 py-1 text-[11px] font-bold text-emerald-600">Actif</span>
               <Link
                 href={`/missions/new?agentId=${agent.id}`}
@@ -161,10 +160,11 @@ interface Props { params: Promise<{ id: string }> }
 
 export default async function AgentDetailPage({ params }: Props) {
   const { id } = await params
-  const agent = MOCK_AGENTS.find((a) => a.id === id)
+  const agent = await getAgent(id)
   if (!agent) notFound()
 
-  const missions = MOCK_MISSIONS.filter((m) => m.agentIds.includes(id))
+  const missions = await getAgentMissions(id)
+  const completed = missions.filter((m) => m.status === 'completed').length
 
   return (
     <div className="flex gap-5">
@@ -178,9 +178,9 @@ export default async function AgentDetailPage({ params }: Props) {
 
         {/* StatCards */}
         <div className="grid grid-cols-3 gap-3">
-          <StatCard icon={MessageSquare} label="Sessions totales"   value={agent.usageCount.toLocaleString()} sub="Cumul"                  iconColor="text-adp-blue"    iconBg="bg-blue-50" />
-          <StatCard icon={ThumbsUp}      label="Satisfaction"       value={`${agent.rating}/5`}               sub="Basé sur les sessions"   iconColor="text-emerald-600" iconBg="bg-emerald-50" />
-          <StatCard icon={Zap}           label="Missions utilisées" value={String(missions.length)}           sub="Toutes missions"          iconColor="text-violet-600"  iconBg="bg-violet-50" />
+          <StatCard icon={MessageSquare} label="Missions lancées"   value={agent.usageCount.toLocaleString('fr-FR')} sub="Cumul"          iconColor="text-adp-blue"    iconBg="bg-blue-50" />
+          <StatCard icon={CheckCircle2}  label="Missions terminées" value={String(completed)}                        sub="Cumul"          iconColor="text-emerald-600" iconBg="bg-emerald-50" />
+          <StatCard icon={Zap}           label="Missions en cours"  value={String(missions.filter((m) => m.status === 'running').length)} sub="Actuellement" iconColor="text-violet-600" iconBg="bg-violet-50" />
         </div>
 
         {/* Header agent */}

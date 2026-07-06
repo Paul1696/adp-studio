@@ -1,7 +1,8 @@
 ﻿import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { Upload, Bot, MessageSquare, AlertTriangle, CheckCircle, UserPlus } from 'lucide-react'
-import { MOCK_PROJECTS, MOCK_ACTIVITIES } from '@/lib/mock-data'
+import { getProject } from '@/lib/data/projects'
+import { getProjectActivities } from '@/lib/data/activities'
 import { cn } from '@/lib/utils'
 import { PageHeader } from '@/components/ui/page-header'
 import { TimelineItem } from '@/components/ui/timeline-item'
@@ -9,6 +10,7 @@ import { SidebarPanel } from '@/components/ui/sidebar-panel'
 import { EmptyState } from '@/components/ui/empty-state'
 
 export const metadata: Metadata = { title: 'Historique' }
+export const dynamic = 'force-dynamic'
 
 interface Props { params: Promise<{ id: string }> }
 
@@ -25,10 +27,11 @@ const FILTERS = ['Tout', 'Documents', 'Missions IA', 'Validations', 'Équipe', '
 
 export default async function HistoriquePage({ params }: Props) {
   const { id } = await params
-  const project = MOCK_PROJECTS.find((p) => p.id === id)
-  if (!project) notFound()
+  const result = await getProject(id)
+  if (!result) notFound()
+  const project = result.ui
 
-  const activities = MOCK_ACTIVITIES.filter((a) => a.projectId === id)
+  const activities = await getProjectActivities(id)
 
   return (
     <div className="flex gap-5">

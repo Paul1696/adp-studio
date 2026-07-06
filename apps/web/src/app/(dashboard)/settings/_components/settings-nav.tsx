@@ -1,6 +1,6 @@
 ﻿'use client'
 
-import { User, Bot, Settings, FileText, Bell, Shield, Plug, CreditCard } from 'lucide-react'
+import { User, Bot, Settings, FileText } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 export type SettingsTab =
@@ -8,20 +8,12 @@ export type SettingsTab =
   | 'agents'
   | 'general'
   | 'documents'
-  | 'notifications'
-  | 'securite'
-  | 'integrations'
-  | 'facturation'
 
 const NAV_ITEMS: { id: SettingsTab; icon: React.ElementType; label: string }[] = [
   { id: 'profil',        icon: User,       label: 'Profil & Équipe' },
   { id: 'agents',        icon: Bot,        label: 'Agent IA' },
   { id: 'general',       icon: Settings,   label: 'Général' },
   { id: 'documents',     icon: FileText,   label: 'Documents' },
-  { id: 'notifications', icon: Bell,       label: 'Notifications' },
-  { id: 'securite',      icon: Shield,     label: 'Sécurité' },
-  { id: 'integrations',  icon: Plug,       label: 'Intégrations' },
-  { id: 'facturation',   icon: CreditCard, label: 'Facturation' },
 ]
 
 interface SettingsNavProps {

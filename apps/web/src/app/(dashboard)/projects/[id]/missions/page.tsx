@@ -2,7 +2,9 @@
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { Zap, Plus, CheckCircle, Clock, Bot } from 'lucide-react'
-import { MOCK_PROJECTS, MOCK_MISSIONS, MOCK_AGENTS } from '@/lib/mock-data'
+import { getProject } from '@/lib/data/projects'
+import { getProjectMissions } from '@/lib/data/missions'
+import { getAgents } from '@/lib/data/agents'
 import { cn } from '@/lib/utils'
 import { PageHeader } from '@/components/ui/page-header'
 import { SidebarPanel } from '@/components/ui/sidebar-panel'
@@ -10,6 +12,7 @@ import { EmptyState } from '@/components/ui/empty-state'
 import { StatusDot } from '@/components/ui/status-dot'
 
 export const metadata: Metadata = { title: 'Missions IA' }
+export const dynamic = 'force-dynamic'
 
 interface Props { params: Promise<{ id: string }> }
 
@@ -22,10 +25,11 @@ const STATUS_CFG = {
 
 export default async function ProjectMissionsPage({ params }: Props) {
   const { id } = await params
-  const project = MOCK_PROJECTS.find((p) => p.id === id)
-  if (!project) notFound()
+  const result = await getProject(id)
+  if (!result) notFound()
+  const project = result.ui
 
-  const missions = MOCK_MISSIONS.filter((m) => m.projectId === id)
+  const [missions, allAgents] = await Promise.all([getProjectMissions(id), getAgents()])
   const completed = missions.filter((m) => m.status === 'completed').length
   const running   = missions.filter((m) => m.status === 'running').length
 
@@ -61,7 +65,7 @@ export default async function ProjectMissionsPage({ params }: Props) {
           <div className="space-y-3">
             {missions.map((mission) => {
               const cfg = STATUS_CFG[mission.status]
-              const agents = MOCK_AGENTS.filter((a) => mission.agentIds.includes(a.id))
+              const agents = allAgents.filter((a) => mission.agentIds.includes(a.id))
               const done = mission.steps.filter((s) => s.status === 'done').length
               return (
                 <Link

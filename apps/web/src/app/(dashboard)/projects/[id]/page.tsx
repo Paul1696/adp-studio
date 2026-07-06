@@ -1,19 +1,47 @@
 ﻿import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { MapPin, User, CheckCircle, Upload, Bot, MessageSquare, AlertTriangle } from 'lucide-react'
-import { MOCK_PROJECTS, MOCK_USERS, MOCK_ACTIVITIES } from '@/lib/mock-data'
+import { getProject } from '@/lib/data/projects'
+import { getProjectTeam } from '@/lib/data/team'
+import { getProjectActivities } from '@/lib/data/activities'
 import { cn } from '@/lib/utils'
+
+export const dynamic = 'force-dynamic'
+
+// Séquence standard des phases — l'avancement est dérivé de la phase courante
+// et de la progression réelle du projet (pas de données par phase en base).
+const PHASE_SEQUENCE = [
+  { phase: 'ESQ', label: 'Esquisse' },
+  { phase: 'APS', label: 'Avant-Projet Sommaire' },
+  { phase: 'APD', label: 'Avant-Projet Définitif' },
+  { phase: 'PRO', label: 'Projet' },
+  { phase: 'DCE', label: 'Dossier Consultation' },
+  { phase: 'EXE', label: 'Exécution' },
+]
+
+function derivePhaseProgress(currentPhase: string, progress: number) {
+  const idx = PHASE_SEQUENCE.findIndex(
+    (p) => p.phase === currentPhase.toUpperCase() || p.label.toLowerCase() === currentPhase.toLowerCase()
+  )
+  return PHASE_SEQUENCE.map((p, i) => ({
+    ...p,
+    pct: idx === -1 ? (i === 0 ? progress : 0) : i < idx ? 100 : i === idx ? progress : 0,
+  }))
+}
 
 interface Props { params: Promise<{ id: string }> }
 
 export default async function ProjectPage({ params }: Props) {
   const { id } = await params
-  const project = MOCK_PROJECTS.find((p) => p.id === id)
-  if (!project) notFound()
+  const result = await getProject(id)
+  if (!result) notFound()
+  const project = result.ui
 
-  const owner = MOCK_USERS.find((u) => u.id === project.members[0])
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const _ = id // used in JSX links below
+  const [team, activities] = await Promise.all([
+    getProjectTeam(id),
+    getProjectActivities(id),
+  ])
+  const owner = team[0]
 
   return (
     <div className="flex gap-5">
@@ -69,14 +97,7 @@ export default async function ProjectPage({ params }: Props) {
         <div className="rounded-xl border border-slate-200/80 bg-white p-4 shadow-sm">
           <h3 className="mb-4 text-xs font-semibold uppercase tracking-wide text-adp-muted">Avancement par phase</h3>
           <div className="space-y-3">
-            {[
-              { phase: 'ESQ', label: 'Esquisse',                pct: 100 },
-              { phase: 'APS', label: 'Avant-Projet Sommaire',   pct: 100 },
-              { phase: 'APD', label: 'Avant-Projet Définitif',  pct: 85  },
-              { phase: 'PRO', label: 'Projet',                  pct: 60  },
-              { phase: 'DCE', label: 'Dossier Consultation',    pct: 20  },
-              { phase: 'EXE', label: 'Exécution',               pct: 0   },
-            ].map(({ phase, label, pct }) => (
+            {derivePhaseProgress(project.phase, project.progress).map(({ phase, label, pct }) => (
               <div key={phase}>
                 <div className="mb-1 flex items-center justify-between text-xs">
                   <div className="flex items-center gap-2">
@@ -108,21 +129,18 @@ export default async function ProjectPage({ params }: Props) {
             <Link href={`/projects/${id}/equipe`} className="text-[11px] text-adp-blue hover:underline">Voir tout</Link>
           </div>
           <div className="space-y-2">
-            {project.members.slice(0, 5).map((uid) => {
-              const u = MOCK_USERS.find((x) => x.id === uid)
-              if (!u) return null
-              return (
-                <div key={uid} className="flex items-center gap-2">
-                  <div className={cn('flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[11px] font-bold text-white', u.avatarColor)}>
-                    {u.initials}
-                  </div>
-                  <div className="min-w-0">
-                    <p className="truncate text-xs font-medium text-adp-slate">{u.fullName}</p>
-                    <p className="truncate text-[11px] text-adp-muted">{u.profession}</p>
-                  </div>
+            {team.slice(0, 5).map((u) => (
+              <div key={u.id} className="flex items-center gap-2">
+                <div className={cn('flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-[11px] font-bold text-white', u.avatarColor)}>
+                  {u.initials}
                 </div>
-              )
-            })}
+                <div className="min-w-0">
+                  <p className="truncate text-xs font-medium text-adp-slate">{u.fullName}</p>
+                  <p className="truncate text-[11px] text-adp-muted">{u.profession}</p>
+                </div>
+              </div>
+            ))}
+            {team.length === 0 && <p className="text-[11px] text-adp-muted">Aucun membre.</p>}
           </div>
         </div>
 
@@ -133,7 +151,7 @@ export default async function ProjectPage({ params }: Props) {
             <Link href={`/projects/${id}/activites`} className="text-[11px] text-adp-blue hover:underline">Voir tout</Link>
           </div>
           <div className="space-y-3">
-            {MOCK_ACTIVITIES.filter((a) => a.projectId === id).slice(0, 4).map((a) => {
+            {activities.slice(0, 4).map((a) => {
               const icons = { upload: Upload, agent: Bot, comment: MessageSquare, clash: AlertTriangle, validation: CheckCircle, member: User } as const
               const Icon = icons[a.type] ?? MessageSquare
               return (
@@ -148,6 +166,7 @@ export default async function ProjectPage({ params }: Props) {
                 </div>
               )
             })}
+            {activities.length === 0 && <p className="text-[11px] text-adp-muted">Aucune activité pour le moment.</p>}
           </div>
         </div>
       </div>

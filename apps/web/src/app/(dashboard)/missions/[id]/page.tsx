@@ -1,21 +1,26 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
-import { MOCK_MISSIONS, MOCK_AGENTS, MOCK_PROJECTS } from '@/lib/mock-data'
+import { getMission } from '@/lib/data/missions'
+import { getAgents } from '@/lib/data/agents'
+import { getProject } from '@/lib/data/projects'
 import { MissionHeader } from './_components/mission-header'
 import { MissionSteps } from './_components/mission-steps'
 import { MissionSidebar } from './_components/mission-sidebar'
 
 export const metadata: Metadata = { title: 'Mission IA' }
+export const dynamic = 'force-dynamic'
 
 interface Props { params: Promise<{ id: string }> }
 
 export default async function MissionDetailPage({ params }: Props) {
   const { id } = await params
-  const mission = MOCK_MISSIONS.find((m) => m.id === id)
+  const mission = await getMission(id)
   if (!mission) notFound()
 
-  const agents  = MOCK_AGENTS.filter((a) => mission.agentIds.includes(a.id))
-  const project = MOCK_PROJECTS.find((p) => p.id === mission.projectId)
+  const allAgents = await getAgents()
+  const agents  = allAgents.filter((a) => mission.agentIds.includes(a.id))
+  const projectResult = mission.projectId ? await getProject(mission.projectId) : null
+  const project = projectResult?.ui
 
   return (
     <div className="flex gap-5">

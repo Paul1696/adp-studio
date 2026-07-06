@@ -1,15 +1,16 @@
-﻿'use client'
+'use client'
 
-import { MOCK_AGENTS } from '@/lib/mock-data'
+import type { MockAgent } from '@/lib/mock-data'
 import { cn } from '@/lib/utils'
-import { Check, Star } from 'lucide-react'
+import { Check } from 'lucide-react'
 
 interface Props {
+  agents: MockAgent[]
   value: string[]
   onChange: (ids: string[]) => void
 }
 
-export function StepAgents({ value, onChange }: Props) {
+export function StepAgents({ agents, value, onChange }: Props) {
   const toggle = (id: string) =>
     onChange(value.includes(id) ? value.filter((v) => v !== id) : [...value, id])
 
@@ -20,7 +21,7 @@ export function StepAgents({ value, onChange }: Props) {
         <p className="mt-1 text-[14px] text-adp-muted">Sélectionnez un ou plusieurs agents spécialisés.</p>
       </div>
       <div className="grid grid-cols-2 gap-2">
-        {MOCK_AGENTS.map((a) => {
+        {agents.map((a) => {
           const selected = value.includes(a.id)
           return (
             <button
@@ -39,10 +40,6 @@ export function StepAgents({ value, onChange }: Props) {
               <div className="min-w-0 flex-1">
                 <p className={cn('truncate text-[14px] font-semibold', selected ? 'text-adp-blue' : 'text-adp-slate')}>{a.name}</p>
                 <p className="mt-0.5 truncate text-[12px] text-adp-muted">{a.specialty}</p>
-                <div className="mt-1 flex items-center gap-1">
-                  <Star className="h-2.5 w-2.5 fill-yellow-400 text-yellow-400" strokeWidth={0} />
-                  <span className="text-[12px] font-semibold text-adp-slate">{a.rating}</span>
-                </div>
               </div>
               {selected && (
                 <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-adp-blue">

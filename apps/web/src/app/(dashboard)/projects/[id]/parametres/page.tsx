@@ -1,7 +1,9 @@
 ﻿import { notFound } from 'next/navigation'
 import { Info, Layers, Bell, Shield, Trash2, Save } from 'lucide-react'
-import { MOCK_PROJECTS } from '@/lib/mock-data'
+import { getProject } from '@/lib/data/projects'
 import { cn } from '@/lib/utils'
+
+export const dynamic = 'force-dynamic'
 
 interface Props { params: Promise<{ id: string }> }
 
@@ -14,8 +16,9 @@ const NAV_SECTIONS = [
 
 export default async function ProjectParametresPage({ params }: Props) {
   const { id } = await params
-  const project = MOCK_PROJECTS.find((p) => p.id === id)
-  if (!project) notFound()
+  const result = await getProject(id)
+  if (!result) notFound()
+  const project = result.ui
 
   return (
     <div className="flex gap-5">

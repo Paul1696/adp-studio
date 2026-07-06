@@ -1,7 +1,7 @@
 ﻿import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { FileText, Download, Plus, Bot, BarChart3, FileCheck, MessageSquare } from 'lucide-react'
-import { MOCK_PROJECTS, MOCK_REPORTS } from '@/lib/mock-data'
+import { getProject } from '@/lib/data/projects'
 import type { Report } from '@/lib/types'
 import { cn } from '@/lib/utils'
 import { PageHeader } from '@/components/ui/page-header'
@@ -9,6 +9,7 @@ import { SidebarPanel } from '@/components/ui/sidebar-panel'
 import { EmptyState } from '@/components/ui/empty-state'
 
 export const metadata: Metadata = { title: 'Rapports' }
+export const dynamic = 'force-dynamic'
 
 interface Props { params: Promise<{ id: string }> }
 
@@ -36,10 +37,12 @@ const TEMPLATES = [
 
 export default async function RapportsPage({ params }: Props) {
   const { id } = await params
-  const project = MOCK_PROJECTS.find((p) => p.id === id)
-  if (!project) notFound()
+  const result = await getProject(id)
+  if (!result) notFound()
+  const project = result.ui
 
-  const reports = MOCK_REPORTS.filter((r) => r.projectId === id)
+  // Pas de modèle rapport en base pour l'instant — état vide honnête.
+  const reports: Report[] = []
 
   return (
     <div className="flex gap-5">
