@@ -1,7 +1,7 @@
 ﻿import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { Banknote, TrendingUp, TrendingDown, AlertTriangle } from 'lucide-react'
-import { MOCK_PROJECTS, MOCK_BUDGETS } from '@/lib/mock-data'
+import { getProject } from '@/lib/data/projects'
 import type { Budget, BudgetLine } from '@/lib/types'
 import { cn } from '@/lib/utils'
 import { PageHeader } from '@/components/ui/page-header'
@@ -10,11 +10,12 @@ import { SidebarPanel } from '@/components/ui/sidebar-panel'
 import { EmptyState } from '@/components/ui/empty-state'
 
 export const metadata: Metadata = { title: 'Budget' }
+export const dynamic = 'force-dynamic'
 
 interface Props { params: Promise<{ id: string }> }
 
 const fmt = (n: number) =>
-  new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 0 }).format(n) + ' FCFA'
+  new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 0 }).format(n) + ' €'
 
 const STATUS_CFG: Record<BudgetLine['status'], { cls: string; label: string }> = {
   ok:      { cls: 'bg-emerald-100 text-emerald-700', label: 'OK' },
@@ -127,10 +128,24 @@ function BudgetTable({ lines }: { lines: BudgetLine[] }) {
 
 export default async function BudgetPage({ params }: Props) {
   const { id } = await params
-  const project = MOCK_PROJECTS.find((p) => p.id === id)
-  if (!project) notFound()
+  const result = await getProject(id)
+  if (!result) notFound()
+  const project = result.ui
 
-  const budget = MOCK_BUDGETS.find((b) => b.projectId === id)
+  // Budget réel du projet — pas de lignes par lot en base pour l'instant
+  const db = result.db
+  const budget: Budget | undefined = db.budget != null
+    ? {
+        id: db.id,
+        projectId: db.id,
+        currency: '€',
+        total: db.budget,
+        engaged: db.budgetSpent ?? 0,
+        spent: db.budgetSpent ?? 0,
+        lines: [],
+        updatedAt: db.updatedAt.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' }),
+      }
+    : undefined
 
   const pctEngaged = budget ? Math.round((budget.engaged / budget.total) * 100) : 0
   const pctSpent   = budget ? Math.round((budget.spent   / budget.total) * 100) : 0
@@ -155,7 +170,15 @@ export default async function BudgetPage({ params }: Props) {
             </div>
 
             {/* Table */}
-            <BudgetTable lines={budget.lines} />
+            {budget.lines.length > 0 ? (
+              <BudgetTable lines={budget.lines} />
+            ) : (
+              <EmptyState
+                icon={Banknote}
+                title="Aucune ligne budgétaire"
+                description="Le détail par lot n'a pas encore été renseigné pour ce projet."
+              />
+            )}
           </>
         ) : (
           <EmptyState

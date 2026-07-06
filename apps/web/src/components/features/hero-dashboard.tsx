@@ -4,22 +4,32 @@ import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { FolderKanban, FileText, Bot, Clock, ArrowRight } from 'lucide-react'
 import { useUser } from '@clerk/nextjs'
-import { MOCK_PROJECTS } from '@/lib/mock-data'
+import type { MockProject } from '@/lib/mock-data'
 
-const STATS = [
-  { icon: FolderKanban, label: 'projets actifs',        value: 4,  color: 'text-adp-blue',    bg: 'bg-blue-50' },
-  { icon: FileText,     label: 'documents ajoutés',     value: 18, color: 'text-violet-600',  bg: 'bg-violet-50' },
-  { icon: Bot,          label: 'analyses IA terminées', value: 3,  color: 'text-emerald-600', bg: 'bg-emerald-50' },
-  { icon: Clock,        label: 'tâches en attente',     value: 7,  color: 'text-amber-600',   bg: 'bg-amber-50' },
-]
+export interface HeroStats {
+  activeProjects: number
+  documents: number
+  completedMissions: number
+  pendingMissions: number
+}
 
-const lastProject = MOCK_PROJECTS[0]!
+interface HeroDashboardProps {
+  lastProject: MockProject | null
+  stats: HeroStats
+}
 
-export function HeroDashboard() {
+export function HeroDashboard({ lastProject, stats }: HeroDashboardProps) {
   const { user } = useUser()
   const hour = new Date().getHours()
   const greeting = hour < 12 ? 'Bonjour' : hour < 18 ? 'Bon après-midi' : 'Bonsoir'
   const firstName = user?.firstName ?? user?.emailAddresses[0]?.emailAddress.split('@')[0] ?? 'vous'
+
+  const STATS = [
+    { icon: FolderKanban, label: 'projets actifs',        value: stats.activeProjects,    color: 'text-adp-blue',    bg: 'bg-blue-50' },
+    { icon: FileText,     label: 'documents ajoutés',     value: stats.documents,         color: 'text-violet-600',  bg: 'bg-violet-50' },
+    { icon: Bot,          label: 'missions terminées',    value: stats.completedMissions, color: 'text-emerald-600', bg: 'bg-emerald-50' },
+    { icon: Clock,        label: 'missions en attente',   value: stats.pendingMissions,   color: 'text-amber-600',   bg: 'bg-amber-50' },
+  ]
 
   return (
     <motion.div
@@ -47,6 +57,7 @@ export function HeroDashboard() {
             </p>
           </div>
 
+          {lastProject && (
           <Link
             href={`/projects/${lastProject.id}`}
             className="group flex shrink-0 flex-col gap-2 rounded-xl border border-adp-blue/25 bg-adp-blue-light px-4 py-3 transition-all duration-150 hover:border-adp-blue hover:bg-adp-blue hover:shadow-md hover:shadow-adp-blue/20"
@@ -74,6 +85,7 @@ export function HeroDashboard() {
               </div>
             </div>
           </Link>
+          )}
         </div>
 
         {/* Statistiques */}

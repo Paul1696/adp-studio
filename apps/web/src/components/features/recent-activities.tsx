@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { Upload, MessageSquare, CheckCircle, AlertTriangle, Bot, UserPlus } from 'lucide-react'
-import { MOCK_ACTIVITIES } from '@/lib/mock-data'
+import type { MockActivity } from '@/lib/mock-data'
 import { cn } from '@/lib/utils'
 
 const TYPE_CFG = {
@@ -15,15 +15,28 @@ const TYPE_CFG = {
   member:     { icon: UserPlus,      cls: 'text-amber-600 bg-amber-50' },
 } as const
 
-const REL_TIME = ["À l'instant", 'Il y a 1 h', 'Il y a 3 h', 'Hier', 'Il y a 2 j']
+interface RecentActivitiesProps {
+  activities: MockActivity[]
+}
 
-const GROUPS = [
-  { label: "Aujourd'hui", indices: [0, 1, 2] },
-  { label: 'Hier',        indices: [3, 4] },
-]
+function groupByDate(items: MockActivity[]) {
+  const groups: { label: string; items: MockActivity[] }[] = []
+  for (const a of items) {
+    let group = groups.find((g) => g.label === a.date)
+    if (!group) {
+      group = { label: a.date, items: [] }
+      groups.push(group)
+    }
+    group.items.push(a)
+  }
+  return groups
+}
 
-export function RecentActivities() {
-  const items = MOCK_ACTIVITIES.slice(0, 5)
+export function RecentActivities({ activities }: RecentActivitiesProps) {
+  const items = activities.slice(0, 5)
+  const groups = groupByDate(items)
+
+  if (items.length === 0) return null
 
   return (
     <div className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm">
@@ -39,14 +52,12 @@ export function RecentActivities() {
       </div>
 
       <div className="space-y-0.5 p-2">
-        {GROUPS.map(({ label, indices }) => (
+        {groups.map(({ label, items: groupItems }) => (
           <div key={label}>
             {/* Label de groupe */}
             <p className="px-2 pb-1 pt-1.5 text-[11px] font-bold uppercase tracking-[0.1em] text-slate-400">{label}</p>
 
-            {indices.map((idx) => {
-              const a = items[idx]
-              if (!a) return null
+            {groupItems.map((a, idx) => {
               const { icon: Icon, cls } = TYPE_CFG[a.type]
               return (
                 <motion.div
@@ -62,7 +73,7 @@ export function RecentActivities() {
                   <div className="min-w-0">
                     <p className="text-[13px] font-medium leading-snug text-adp-slate">{a.label}</p>
                     <p className="mt-0.5 text-[11px] text-adp-muted">
-                      {a.projectName} · {REL_TIME[idx]}
+                      {a.projectName} · {a.time}
                     </p>
                   </div>
                 </motion.div>

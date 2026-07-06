@@ -2,20 +2,24 @@
 
 import Link from 'next/link'
 import { motion } from 'framer-motion'
-import { ExternalLink, Clock, Zap } from 'lucide-react'
-import { MOCK_AGENTS } from '@/lib/mock-data'
+import { ExternalLink, Zap } from 'lucide-react'
+import type { MockAgent } from '@/lib/mock-data'
 import { cn } from '@/lib/utils'
 
-const LAST_USED = ['Il y a 2 h', 'Hier', 'Il y a 3 j', 'Il y a 1 sem.', 'Il y a 2 sem.']
+interface FavoriteAgentsProps {
+  agents: MockAgent[]
+}
 
-export function FavoriteAgents() {
-  const top = MOCK_AGENTS.slice(0, 5)
+export function FavoriteAgents({ agents }: FavoriteAgentsProps) {
+  const top = agents.slice(0, 5)
+
+  if (top.length === 0) return null
 
   return (
     <div className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-sm">
       {/* Header */}
       <div className="flex items-center justify-between border-b border-slate-100 px-4 py-3">
-        <h3 className="text-[13px] font-semibold tracking-tight text-adp-slate">Agents favoris</h3>
+        <h3 className="text-[13px] font-semibold tracking-tight text-adp-slate">Agents les plus utilisés</h3>
         <Link
           href="/agents"
           className="flex items-center gap-1 text-[12px] font-medium text-adp-muted transition-colors duration-150 hover:text-adp-blue"
@@ -44,13 +48,9 @@ export function FavoriteAgents() {
             <div className="min-w-0 flex-1">
               <p className="truncate text-[13px] font-semibold leading-snug text-adp-slate">{agent.name}</p>
               <div className="mt-0.5 flex items-center gap-2 text-[11px] text-adp-muted">
-                <span className="flex items-center gap-0.5">
-                  <Clock className="h-2 w-2" strokeWidth={2} />
-                  {LAST_USED[i]}
-                </span>
                 <span className="flex items-center gap-0.5 text-emerald-600">
                   <Zap className="h-2 w-2" strokeWidth={2} />
-                  Actif
+                  {agent.usageCount} mission{agent.usageCount > 1 ? 's' : ''}
                 </span>
               </div>
             </div>

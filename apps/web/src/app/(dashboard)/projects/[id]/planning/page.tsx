@@ -1,8 +1,9 @@
 ﻿import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { Calendar, CheckCircle, Clock, Flag, Diamond } from 'lucide-react'
-import { MOCK_PROJECTS, MOCK_PLANNING } from '@/lib/mock-data'
+import { getProject } from '@/lib/data/projects'
 import type { PlanningPhase } from '@/lib/types'
+import { EmptyState } from '@/components/ui/empty-state'
 import { cn } from '@/lib/utils'
 import { PageHeader } from '@/components/ui/page-header'
 import { StatCard } from '@/components/ui/stat-card'
@@ -94,25 +95,25 @@ function GanttChart({ phases }: { phases: PlanningPhase[] }) {
 }
 
 export const metadata: Metadata = { title: 'Planning' }
+export const dynamic = 'force-dynamic'
 
 interface Props { params: Promise<{ id: string }> }
 
 export default async function PlanningPage({ params }: Props) {
   const { id } = await params
-  const project = MOCK_PROJECTS.find((p) => p.id === id)
-  if (!project) notFound()
+  const result = await getProject(id)
+  if (!result) notFound()
+  const project = result.ui
 
-  const phases = MOCK_PLANNING.filter((p) => p.projectId === id)
-  const done = phases.filter((p) => p.status === 'done').length
-  const current = phases.find((p) => p.status === 'current')
-  const milestones = phases.flatMap((p) => p.milestones)
-  const nextMilestone = milestones.find((m) => !m.done)
+  // Pas de modèle planning en base — seules la phase courante et la
+  // progression réelles du projet sont affichées.
+  const phases: PlanningPhase[] = []
 
   const STATS = [
-    { icon: Calendar,     label: 'Phases totales',   value: String(phases.length),  sub: 'Du ESQ au RCE',      iconColor: 'text-adp-blue',    iconBg: 'bg-blue-50' },
-    { icon: CheckCircle,  label: 'Phases terminées', value: String(done),            sub: 'Validées',            iconColor: 'text-emerald-600', iconBg: 'bg-emerald-50' },
-    { icon: Clock,        label: 'Phase en cours',   value: current?.code ?? '—',   sub: current?.label ?? '—', iconColor: 'text-violet-600',  iconBg: 'bg-violet-50' },
-    { icon: Flag,         label: 'Jalons totaux',    value: String(milestones.length), sub: nextMilestone ? `Prochain : ${nextMilestone.date}` : 'Tous validés', iconColor: 'text-amber-600', iconBg: 'bg-amber-50' },
+    { icon: Clock,        label: 'Phase en cours',   value: project.phase,               sub: 'Phase actuelle du projet', iconColor: 'text-violet-600',  iconBg: 'bg-violet-50' },
+    { icon: CheckCircle,  label: 'Progression',      value: `${project.progress}%`,      sub: 'Avancement global',        iconColor: 'text-emerald-600', iconBg: 'bg-emerald-50' },
+    { icon: Calendar,     label: 'Début',            value: project.startDate,           sub: 'Date de démarrage',        iconColor: 'text-adp-blue',    iconBg: 'bg-blue-50' },
+    { icon: Flag,         label: 'Fin prévue',       value: project.endDate,             sub: 'Échéance',                 iconColor: 'text-amber-600',   iconBg: 'bg-amber-50' },
   ]
 
   return (
@@ -129,7 +130,15 @@ export default async function PlanningPage({ params }: Props) {
         </div>
 
         {/* Gantt */}
-        <GanttChart phases={phases} />
+        {phases.length > 0 ? (
+          <GanttChart phases={phases} />
+        ) : (
+          <EmptyState
+            icon={Calendar}
+            title="Aucun planning détaillé"
+            description="Le découpage en phases et jalons n'a pas encore été renseigné pour ce projet."
+          />
+        )}
       </div>
 
 

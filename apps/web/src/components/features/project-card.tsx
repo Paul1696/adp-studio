@@ -4,12 +4,21 @@ import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { MapPin, ArrowRight, Maximize2, Banknote, MoreHorizontal } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import type { MockProject, MockUser } from '@/lib/mock-data'
+import { ProjectImage } from '@/components/ui/project-image'
+import type { MockProject } from '@/lib/mock-data'
 
 interface ProjectCardProps {
   project: MockProject
-  members: MockUser[]
+  members: string[]
   delay?: number
+  index?: number
+}
+
+const AVATAR_COLORS = ['bg-adp-blue', 'bg-violet-500', 'bg-emerald-500', 'bg-orange-500', 'bg-pink-500', 'bg-teal-500', 'bg-rose-500']
+
+function memberInitials(name: string): string {
+  const parts = name.trim().split(/\s+/)
+  return ((parts[0]?.[0] ?? '') + (parts[1]?.[0] ?? '')).toUpperCase() || '?'
 }
 
 const STATUS_CFG = {
@@ -31,7 +40,7 @@ const PHASE_CFG: Record<string, string> = {
   RCE: 'bg-teal-600',
 }
 
-export function ProjectCard({ project: p, members, delay = 0 }: ProjectCardProps) {
+export function ProjectCard({ project: p, members, delay = 0, index = 0 }: ProjectCardProps) {
   const status = STATUS_CFG[p.status]!
   const phaseBg = PHASE_CFG[p.apdStage] ?? 'bg-slate-600'
 
@@ -44,9 +53,10 @@ export function ProjectCard({ project: p, members, delay = 0 }: ProjectCardProps
     >
       {/* Image */}
       <div className="relative h-36 overflow-hidden bg-slate-100">
-        <img
+        <ProjectImage
           src={p.image}
           alt={p.name}
+          index={index}
           className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.04]"
         />
         {/* Overlay gradient permanent */}
@@ -141,13 +151,13 @@ export function ProjectCard({ project: p, members, delay = 0 }: ProjectCardProps
         <div className="flex items-center justify-between">
           {/* Avatars */}
           <div className="flex -space-x-1.5">
-            {members.slice(0, 4).map((u) => (
+            {members.slice(0, 4).map((name, i) => (
               <div
-                key={u.id}
-                title={u.fullName}
-                className={cn('flex h-6 w-6 items-center justify-center rounded-full border-2 border-white text-[8px] font-bold text-white shadow-sm', u.avatarColor)}
+                key={`${name}-${i}`}
+                title={name}
+                className={cn('flex h-6 w-6 items-center justify-center rounded-full border-2 border-white text-[8px] font-bold text-white shadow-sm', AVATAR_COLORS[i % AVATAR_COLORS.length])}
               >
-                {u.initials}
+                {memberInitials(name)}
               </div>
             ))}
             {members.length > 4 && (

@@ -1,7 +1,8 @@
 ﻿import type { Metadata } from 'next'
 import Link from 'next/link'
 import { Zap, Plus, CheckCircle, Clock, Bot, BarChart3 } from 'lucide-react'
-import { MOCK_MISSIONS, MOCK_AGENTS } from '@/lib/mock-data'
+import { getUserMissions } from '@/lib/data/missions'
+import { getAgents } from '@/lib/data/agents'
 import { cn } from '@/lib/utils'
 import { PageHeader } from '@/components/ui/page-header'
 import { StatCard } from '@/components/ui/stat-card'
@@ -9,6 +10,7 @@ import { SidebarPanel } from '@/components/ui/sidebar-panel'
 import { EmptyState } from '@/components/ui/empty-state'
 
 export const metadata: Metadata = { title: 'Missions IA' }
+export const dynamic = 'force-dynamic'
 
 const STATUS_CFG = {
   draft:     { label: 'Brouillon', cls: 'bg-slate-100 text-slate-600' },
@@ -17,11 +19,13 @@ const STATUS_CFG = {
   failed:    { label: 'Échouée',   cls: 'bg-red-100 text-red-700' },
 }
 
-export default function MissionsPage() {
-  const total     = MOCK_MISSIONS.length
-  const completed = MOCK_MISSIONS.filter((m) => m.status === 'completed').length
-  const running   = MOCK_MISSIONS.filter((m) => m.status === 'running').length
-  const draft     = MOCK_MISSIONS.filter((m) => m.status === 'draft').length
+export default async function MissionsPage() {
+  const [missions, agents] = await Promise.all([getUserMissions(), getAgents()])
+  const total     = missions.length
+  const completed = missions.filter((m) => m.status === 'completed').length
+  const running   = missions.filter((m) => m.status === 'running').length
+  const draft     = missions.filter((m) => m.status === 'draft').length
+  const topAgents = [...agents].sort((a, b) => b.usageCount - a.usageCount).slice(0, 5)
 
   return (
     <div className="flex gap-5">
@@ -47,7 +51,7 @@ export default function MissionsPage() {
           <StatCard icon={BarChart3}   label="Brouillons"      value={String(draft)}     sub="Non lancées"        iconColor="text-amber-600"   iconBg="bg-amber-50" />
         </div>
 
-        {MOCK_MISSIONS.length === 0 ? (
+        {missions.length === 0 ? (
           <EmptyState
             icon={Zap}
             title="Aucune mission pour l'instant"
@@ -61,9 +65,9 @@ export default function MissionsPage() {
           />
         ) : (
         <div className="space-y-3">
-          {MOCK_MISSIONS.map((mission) => {
+          {missions.map((mission) => {
             const cfg = STATUS_CFG[mission.status]
-            const agents = MOCK_AGENTS.filter((a) => mission.agentIds.includes(a.id))
+            const missionAgents = agents.filter((a) => mission.agentIds.includes(a.id))
             const done = mission.steps.filter((s) => s.status === 'done').length
             return (
               <Link
@@ -84,7 +88,7 @@ export default function MissionsPage() {
                   </div>
                   <p className="mt-1.5 text-[13px] leading-snug text-adp-muted line-clamp-1">{mission.objective}</p>
                   <div className="mt-2 flex items-center gap-4 text-[12px] text-adp-muted">
-                    <span className="flex items-center gap-1"><Bot className="h-3 w-3" strokeWidth={1.75} />{agents.map((a) => a.name).join(', ')}</span>
+                    <span className="flex items-center gap-1"><Bot className="h-3 w-3" strokeWidth={1.75} />{missionAgents.map((a) => a.name).join(', ') || '—'}</span>
                     <span className="flex items-center gap-1"><CheckCircle className="h-3 w-3" strokeWidth={1.75} />{done}/{mission.steps.length} étapes</span>
                     <span className="flex items-center gap-1"><Clock className="h-3 w-3" strokeWidth={1.75} />{mission.completedAt ?? mission.createdAt}</span>
                   </div>
@@ -99,8 +103,8 @@ export default function MissionsPage() {
       <div className="w-56 shrink-0 space-y-3">
         <SidebarPanel title="Agents les plus utilisés">
           <div className="divide-y divide-slate-100/80">
-            {MOCK_AGENTS.slice(0, 5).map((a) => {
-              const count = MOCK_MISSIONS.filter((m) => m.agentIds.includes(a.id)).length
+            {topAgents.map((a) => {
+              const count = a.usageCount
               return (
                 <div key={a.id} className="flex items-center gap-2.5 px-4 py-2.5">
                   <div className={cn('flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-[12px] font-bold', a.colorBg, a.color)}>{a.icon}</div>
